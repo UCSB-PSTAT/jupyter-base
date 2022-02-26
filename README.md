@@ -1,4 +1,4 @@
-UCSB RStudio Base
+UCSB Jupyter Notebook base
 =================
 
 Base image for launching Jupyter notebooks via JupyterHub.  This based on the [Jupyter upstream](https://hub.docker.com/r/jupyter/base-notebook) and adds features and libraries commonly used in data science lab courses at [UCSB](https://ucsb.edu) that make use of [Python](https://www.python.org/).  In addition, these builds also include updates to the base OS image as available at the time of build.
