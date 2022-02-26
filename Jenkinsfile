@@ -1,5 +1,6 @@
 pipeline {
     agent none
+    triggers { cron('H H(0-6) * * 2') }
     environment {
         IMAGE_NAME = 'jupyter-base'
     }
@@ -28,13 +29,12 @@ pipeline {
                     }
                 }
                 stage('Deploy') {
-                    when { branch 'main' }
+                    when { branch 'int-test' }
                     environment {
                         DOCKER_HUB_CREDS = credentials('DockerHubToken')
                     }
                     steps {
-                        sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:latest --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                        sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                        sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:weekly --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                     }
                 }                
             }
