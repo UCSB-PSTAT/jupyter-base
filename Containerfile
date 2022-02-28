@@ -40,7 +40,8 @@ RUN apt update -qq && \
 RUN pip install nbgitpuller && \
     jupyter serverextension enable --py nbgitpuller --sys-prefix
 
-RUN cp /opt/conda/lib/python3.9/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.9/site-packages/notebook/templates/status.html
+RUN cp /opt/conda/lib/python3.9/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.9/site-packages/notebook/templates/status.html && \
+    cp /opt/conda/lib/python3.9/site-packages/nbgitpuller/templates/status.html /opt/conda/share/jupyterhub/templates/status.html
 
 RUN mamba install -y -c conda-forge pandas numpy matplotlib 
 
