@@ -20,6 +20,7 @@ RUN apt update -qq && \
         libv8-dev \
         libssh2-1-dev \
         git \
+        git-lfs \
         curl \
         vim \
         libuser \
@@ -44,4 +45,8 @@ RUN cp /opt/conda/lib/python3.9/site-packages/nbgitpuller/templates/status.html 
 
 RUN mamba install -y -c conda-forge pandas numpy matplotlib 
 
+RUN cp /opt/conda/lib/python3.9/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.9/site-packages/notebook/templates/status.html
+
 USER $NB_USER
+
+RUN git lfs install
