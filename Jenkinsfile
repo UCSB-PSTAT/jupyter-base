@@ -1,42 +1,47 @@
 pipeline {
     agent none
-    environment {
-        IMAGE_NAME = 'jupyter-base'
-    }
-    stages {
-        stage('Build Test Deploy') {
-            agent {
-                label 'jupyter'
+    matrix {
+        axes {
+            axis {
+                name 'IMAGE_NAME'
+                values 'jupyter-base', 'scipy-base'
             }
-            stages{
-                stage('Build') {
-                    steps {
-                        sh 'podman build -t $IMAGE_NAME --pull  --no-cache .'
-                     }
+        }
+        stages {
+            stage('Build Test Deploy') {
+                agent {
+                    label 'jupyter'
                 }
-                stage('Test') {
-                    steps {
-                        sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
-                        sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
-                        sh 'sleep 10 && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
-                        sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                stages{
+                    stage('Build') {
+                        steps {
+                            sh 'podman build -t $IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:notebook-6.4.10")  .'
+                         }
                     }
-                    post {
-                        always {
-                            sh 'podman rm -ifv $IMAGE_NAME'
+                    stage('Test') {
+                        steps {
+                            sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
+                            sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
+                            sh 'sleep 10 && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                            sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                        }
+                        post {
+                            always {
+                                sh 'podman rm -ifv $IMAGE_NAME'
+                            }
                         }
                     }
+                    stage('Deploy') {
+                        when { branch 'main' }
+                        environment {
+                            DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                        }
+                        steps {
+                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:latest --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                        }
+                    }                
                 }
-                stage('Deploy') {
-                    when { branch 'main' }
-                    environment {
-                        DOCKER_HUB_CREDS = credentials('DockerHubToken')
-                    }
-                    steps {
-                        sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:latest --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                        sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                    }
-                }                
             }
         }
     }
