@@ -1,7 +1,7 @@
 pipeline {
     agent none
     stages {
-        stage 'Jupyter Images'
+        stage('Jupyter Images') {
             matrix {
                 axes {
                     axis {
