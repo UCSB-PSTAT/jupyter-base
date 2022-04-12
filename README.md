@@ -3,6 +3,12 @@ UCSB Jupyter Notebook base
 
 Base image for launching Jupyter notebooks via JupyterHub.  This based on the [Jupyter upstream](https://hub.docker.com/r/jupyter/base-notebook) and adds features and libraries commonly used in data science lab courses at [UCSB](https://ucsb.edu) that make use of [Python](https://www.python.org/).  In addition, these builds also include updates to the base OS image as available at the time of build.
 
+This repo produces the following images on Docker Hub:
+* [ucsb/jupyter-base](https://hub.docker.com/r/ucsb/jupyter-base)
+* [ucsb/scipy-base](https://hub.docker.com/r/ucsb/scipy-base)
+
+Looking for RStudio support?  Check out our [RStudio base image](https://hub.docker.com/u/ucsb/rstudio-base).
+
 ## How to run
 
 The most basic way to demo this locally: 
@@ -11,7 +17,7 @@ The most basic way to demo this locally:
 
 In the stdout, there will be a link that includes a token that will allow you to login locally with a browser.  Common endpoints are /tree and /hub.
 
-Generally, refer to [upstream documentation](https://jupyter-docker-stacks.readthedocs.io/en/latest/) for running these containers, however, this container adds an additional /rstudio endpoint with the necessary [jupyter session proxy](https://github.com/jupyterhub/jupyter-rsession-proxy) layer, making it suitable to deploy via [JupyterHub helm chart](https://zero-to-jupyterhub.readthedocs.io/en/latest/) or as a standalone deployment.
+Generally, refer to [upstream documentation](https://jupyter-docker-stacks.readthedocs.io/en/latest/) for running these containers. These are also suitable images for deployment via [JupyterHub helm chart](https://zero-to-jupyterhub.readthedocs.io/en/latest/) or as a standalone deployment.
 
 ## How to build an image from this
 
