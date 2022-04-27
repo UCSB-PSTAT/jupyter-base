@@ -12,7 +12,7 @@ pipeline {
             stages{
                 stage('Build') {
                     steps {
-                        sh 'podman build -t $IMAGE_NAME --pull  --no-cache --from jupyter/base-notebook:latest .'
+                        sh 'podman build -t localhost/$IMAGE_NAME --pull  --no-cache --from jupyter/base-notebook:latest .'
                      }
                 }
                 stage('Test') {
