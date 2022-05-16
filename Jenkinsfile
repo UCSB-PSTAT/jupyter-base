@@ -1,5 +1,6 @@
 pipeline {
     agent none
+    triggers { cron('H H(0-6) * * 1') }
     stages {
         stage('Jupyter Images') {
             matrix {
