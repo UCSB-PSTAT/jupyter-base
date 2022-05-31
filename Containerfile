@@ -41,12 +41,12 @@ RUN apt update -qq && \
 RUN pip install nbgitpuller && \
     jupyter serverextension enable --py nbgitpuller --sys-prefix
 
-RUN cp /opt/conda/lib/python3.10/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.10/site-packages/notebook/templates/status.html && \
-    cp /opt/conda/lib/python3.10/site-packages/nbgitpuller/templates/status.html /opt/conda/share/jupyterhub/templates/status.html
+RUN export PYTHON_MINOR=$(python -c 'import sys;print(sys.version_info[1])') && \
+    cp /opt/conda/lib/python3.${PYTHON_MINOR}/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.${PYTHON_MINOR}/site-packages/notebook/templates/status.html && \
+    cp /opt/conda/lib/python3.${PYTHON_MINOR}/site-packages/nbgitpuller/templates/status.html /opt/conda/share/jupyterhub/templates/status.html && \
+    cp /opt/conda/lib/python3.${PYTHON_MINOR}/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.${PYTHON_MINOR}/site-packages/notebook/templates/status.html
 
 RUN mamba install -y -c conda-forge pandas numpy matplotlib 
-
-RUN cp /opt/conda/lib/python3.10/site-packages/nbgitpuller/templates/status.html /opt/conda/lib/python3.10/site-packages/notebook/templates/status.html
 
 USER $NB_USER
 
