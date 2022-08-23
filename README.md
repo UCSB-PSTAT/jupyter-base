@@ -9,8 +9,41 @@ This repo produces the following images on Docker Hub:
 
 Looking for RStudio support?  Check out our [RStudio base image](https://hub.docker.com/u/ucsb/rstudio-base).
 
+## How to run
+
+The most basic way to demo this locally: 
+
+`podman -it -p8888:8888 ucsb/jupyter-base:latest`
+
+In the stdout, there will be a link that includes a token that will allow you to login locally with a browser.  Common endpoints are /tree and /hub.
+
+Generally, refer to [upstream documentation](https://jupyter-docker-stacks.readthedocs.io/en/latest/) for running these containers. These are also suitable images for deployment via [JupyterHub helm chart](https://zero-to-jupyterhub.readthedocs.io/en/latest/) or as a standalone deployment.
+
+## How to build an image from this
+
+In order to build a downstream image, the user should be first set to root, and then reset back once changes are complete:
+
+```
+FROM ucsb/jupyter-base:latest
+
+USER root
+
+# Add your changes here
+RUN mamba install ...
+
+USER $NB_USER
+```
+
+## Tags
+
+`latest` - Periodically a Jupyter release version is tagged in the Containerfile and this tags tracks the most recent build against that particular version.  That version may get updated at least quarterly.
+
+`weekly` - This tag is primarily for integration testing and tracks the upstream `latest` tag.  These images are generally built, tested, and updated weekly on Monday mornings (PDT time).
+
+`v...` - The numbers in these tags represent a date and are effectively a snapshot of the `latest` tag as it was on that particular day.  
+
 ## Python Package List
-Here's a list of python packages that are available in this image:
+Here's a periodically updated list of python packages that are available in this image.  Actual versions may be newer than shown here.
 ```
 alembic @ file:///home/conda/feedstock_root/build_artifacts/alembic_1654060492067/work
 anyio @ file:///home/conda/feedstock_root/build_artifacts/anyio_1652463865103/work/dist
@@ -134,36 +167,3 @@ webencodings==0.5.1
 websocket-client @ file:///home/conda/feedstock_root/build_artifacts/websocket-client_1648562593984/work
 zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1649012893348/work
 ```
-
-## How to run
-
-The most basic way to demo this locally: 
-
-`podman -it -p8888:8888 ucsb/jupyter-base:latest`
-
-In the stdout, there will be a link that includes a token that will allow you to login locally with a browser.  Common endpoints are /tree and /hub.
-
-Generally, refer to [upstream documentation](https://jupyter-docker-stacks.readthedocs.io/en/latest/) for running these containers. These are also suitable images for deployment via [JupyterHub helm chart](https://zero-to-jupyterhub.readthedocs.io/en/latest/) or as a standalone deployment.
-
-## How to build an image from this
-
-In order to build a downstream image, the user should be first set to root, and then reset back once changes are complete:
-
-```
-FROM ucsb/jupyter-base:latest
-
-USER root
-
-# Add your changes here
-RUN mamba install ...
-
-USER $NB_USER
-```
-
-## Tags
-
-`latest` - Periodically a Jupyter release version is tagged in the Containerfile and this tags tracks the most recent build against that particular version.  That version may get updated at least quarterly.
-
-`weekly` - This tag is primarily for integration testing and tracks the upstream `latest` tag.  These images are generally built, tested, and updated weekly on Monday mornings (PDT time).
-
-`v...` - The numbers in these tags represent a date and are effectively a snapshot of the `latest` tag as it was on that particular day.  
