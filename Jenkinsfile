@@ -14,50 +14,50 @@ pipeline {
                         values 'jupyter', 'jupyter-arm'
                     }
                 }
-            }
-            stages {
-                stage('Build Test Deploy') {
-                    agent {
-                        label "${AGENT}"
-                    }
-                    stages{
-                        stage('Build (x86_64)') {
-                            when { environment name: 'AGENT', value: 'jupyter'}
-                            steps {
-                                scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:$([ "jupyter-arm" == "$AGENT" ] && echo "aarch64-")notebook-6.4.10" || echo "--from=jupyter/base-notebook:$([ "jupyter-arm" == "$AGENT" ] && echo "aarch64-")notebook-6.4.10)  .'
-                            }
+                stages {
+                    stage('Build Test Deploy') {
+                        agent {
+                            label "${AGENT}"
                         }
-                        stage('Build (aarch64)') {
-                            when { environment name: 'AGENT', value: 'jupyter-arm'}
-                            steps {
-                                scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:aarch64-notebook-6.4.10" || echo "--from=jupyter/base-notebook:aarch64-notebook-6.4.10")  .'
-                            }
-                        }
-                        stage('Test') {
-                            steps {
-                                sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
-                                sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
-                                sh 'sleep 10 && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
-                                sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
-                            }
-                            post {
-                                always {
-                                    sh 'podman rm -ifv $IMAGE_NAME'
+                        stages{
+                            stage('Build (x86_64)') {
+                                when { environment name: 'AGENT', value: 'jupyter'}
+                                steps {
+                                    scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:$([ "jupyter-arm" == "$AGENT" ] && echo "aarch64-")notebook-6.4.10" || echo "--from=jupyter/base-notebook:$([ "jupyter-arm" == "$AGENT" ] && echo "aarch64-")notebook-6.4.10)  .'
                                 }
                             }
+                            stage('Build (aarch64)') {
+                                when { environment name: 'AGENT', value: 'jupyter-arm'}
+                                steps {
+                                    scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:aarch64-notebook-6.4.10" || echo "--from=jupyter/base-notebook:aarch64-notebook-6.4.10")  .'
+                                }
+                            }
+                            stage('Test') {
+                                steps {
+                                    sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
+                                    sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
+                                    sh 'sleep 10 && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                                    sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                                }
+                                post {
+                                    always {
+                                        sh 'podman rm -ifv $IMAGE_NAME'
+                                    }
+                                }
+                            }
+                            stage('Deploy') {
+                                when { branch 'main' }
+                                environment {
+                                    DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                                }
+                                steps {
+                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:latest$([ "jupyter-arm" == "$AGENT" ] && echo "-aarch64") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d")$([ "jupyter-arm" == "$AGENT" ] && echo "-aarch64") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                }
+                            }                
                         }
-                        stage('Deploy') {
-                            when { branch 'main' }
-                            environment {
-                                DOCKER_HUB_CREDS = credentials('DockerHubToken')
-                            }
-                            steps {
-                                sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:latest$([ "jupyter-arm" == "$AGENT" ] && echo "-aarch64") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                                sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d")$([ "jupyter-arm" == "$AGENT" ] && echo "-aarch64") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                            }
-                        }                
                     }
                 }
             }
