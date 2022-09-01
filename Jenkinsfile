@@ -1,6 +1,9 @@
 pipeline {
     agent none
     triggers { cron('H H(0-6) * * 1') }
+    environment {
+        JUPYTER_VERSION
+    }
     stages {
         stage('Jupyter Images') {
             matrix {
@@ -20,18 +23,21 @@ pipeline {
                             label "${AGENT}"
                         }
                         stages{
-                            stage('Build (x86_64)') {
+                            stage('Build') {
+                                environment {
+                                    IMG_PREFIX = """${sh
+                                        returnStdout: true,
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || echo ""'
+                                    })"""
+                                    IMG_BASE = """${sh
+                                        returnStdout: true,
+                                        script: '[ "scipy-base" == "$IMG_NAME" ] && echo "scipy" || echo "base"'
+                                    })"""                                    
+                                }
                                 when { environment name: 'AGENT', value: 'jupyter'}
                                 steps {
                                     scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:notebook-6.4.10")  .'
-                                }
-                            }
-                            stage('Build (aarch64)') {
-                                when { environment name: 'AGENT', value: 'jupyter-arm'}
-                                steps {
-                                    scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:aarch64-notebook-6.4.12" || echo "--from=jupyter/base-notebook:aarch64-notebook-6.4.12")  .'
+                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}notebook-${JUPYTER_VERSION} .'
                                 }
                             }
                             stage('Test') {
@@ -51,10 +57,14 @@ pipeline {
                                 when { branch 'main' }
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                                    IMG_SUFFIX = """${sh
+                                        returnStdout: true,
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
+                                    })"""                                    
                                 }
                                 steps {
-                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:latest$([ "jupyter-arm" == "$AGENT" ] && echo "-aarch64") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d")$([ "jupyter-arm" == "$AGENT" ] && echo "-aarch64") --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                                 }
                             }                
                         }
