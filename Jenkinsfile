@@ -34,7 +34,6 @@ pipeline {
                                         script: '[ "scipy-base" == "$IMG_NAME" ] && echo "scipy" || echo "base"'
                                     })"""                                    
                                 }
-                                when { environment name: 'AGENT', value: 'jupyter'}
                                 steps {
                                     scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
                                     sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}notebook-${JUPYTER_VERSION} .'
