@@ -25,14 +25,14 @@ pipeline {
                         stages{
                             stage('Build') {
                                 environment {
-                                    IMG_PREFIX = """${sh
+                                    IMG_PREFIX = """${sh(
                                         returnStdout: true,
                                         script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || echo ""'
-                                    })"""
-                                    IMG_BASE = """${sh
+                                    ).trim()}"""
+                                    IMG_BASE = """${sh(
                                         returnStdout: true,
                                         script: '[ "scipy-base" == "$IMG_NAME" ] && echo "scipy" || echo "base"'
-                                    })"""                                    
+                                    ).trim()}"""                                    
                                 }
                                 steps {
                                     scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
@@ -56,10 +56,10 @@ pipeline {
                                 when { branch 'main' }
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('DockerHubToken')
-                                    IMG_SUFFIX = """${sh
+                                    IMG_SUFFIX = """${sh(
                                         returnStdout: true,
                                         script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
-                                    })"""                                    
+                                    ).trim()}"""                                    
                                 }
                                 steps {
                                     sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
