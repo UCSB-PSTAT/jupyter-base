@@ -16,6 +16,10 @@ pipeline {
                         name 'AGENT'
                         values 'jupyter', 'jupyter-arm'
                     }
+                    axis {
+                        name 'STREAM'
+                        values 'stable', 'integration'
+                    }
                 }
                 stages {
                     stage('Build Test Deploy') {
@@ -32,11 +36,15 @@ pipeline {
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
                                         script: '[ "scipy-base" == "$IMG_NAME" ] && echo "scipy" || echo "base"'
-                                    ).trim()}"""                                    
+                                    ).trim()}"""        
+                                    IMG_VERSION = """${sh(
+                                        returnStdout: true,
+                                        script: '[ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
+                                    ).trim()}""" 
                                 }
                                 steps {
                                     scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}notebook-${JUPYTER_VERSION} .'
+                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                 }
                             }
                             stage('Test') {
@@ -61,9 +69,20 @@ pipeline {
                                         script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
                                     ).trim()}"""                                    
                                 }
-                                steps {
-                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                                    sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                stages{
+                                    stage('Deploy latest/version tag') {
+                                        when { environment name: 'STREAM', value: 'current' }
+                                        steps {
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                        }
+                                    }
+                                    stage('Deploy weekly tag') {
+                                        when { environment name: 'STREAM', value: 'integration' }
+                                        steps {
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:weekly${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                        }
+                                    }
                                 }
                             }                
                         }
