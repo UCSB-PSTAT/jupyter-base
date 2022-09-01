@@ -2,7 +2,7 @@ pipeline {
     agent none
     triggers { cron('H H(0-6) * * 1') }
     stages {
-        stage('Jupyter Images')
+        stage('Jupyter Images') {
             parallel {
                 stage('Jupyter Images (x86_64') {
                     matrix {
