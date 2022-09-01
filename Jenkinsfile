@@ -2,7 +2,7 @@ pipeline {
     agent none
     triggers { cron('H H(0-6) * * 1') }
     environment {
-        JUPYTER_VERSION
+        JUPYTER_VERSION = '6.4.12'
     }
     stages {
         stage('Jupyter Images') {
