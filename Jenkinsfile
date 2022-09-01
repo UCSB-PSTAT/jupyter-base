@@ -24,7 +24,7 @@ pipeline {
                                 when { environment name: 'AGENT', value: 'jupyter'}
                                 steps {
                                     scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:$([ "jupyter-arm" == "$AGENT" ] && echo "aarch64-")notebook-6.4.10" || echo "--from=jupyter/base-notebook:$([ "jupyter-arm" == "$AGENT" ] && echo "aarch64-")notebook-6.4.10)  .'
+                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache $([ "scipy-base" == "$IMAGE_NAME" ] && echo "--from=jupyter/scipy-notebook:$([ \\"jupyter-arm\\" == \\"$AGENT\\" ] && echo \\"aarch64-\\")notebook-6.4.10" || echo "--from=jupyter/base-notebook:$([ \\"jupyter-arm\\" == \\"$AGENT\\" ] && echo \\"aarch64-\\")notebook-6.4.10)  .'
                                 }
                             }
                             stage('Build (aarch64)') {
