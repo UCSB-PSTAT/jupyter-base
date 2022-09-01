@@ -52,7 +52,7 @@ pipeline {
                             }
                         }
                     }
-                stage('Jupyter Images (aarch64)' {
+                stage('Jupyter Images (aarch64)') {
                     matrix {
                         axes {
                             axis {
