@@ -51,10 +51,15 @@ pipeline {
                                             scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
                                             sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
+                                            CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
-                                                CONT = "false"
+                                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
+                                                    error ${e}
+                                                }
                                             } else {
-                                                error ${e}
+                                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE'){
+                                                    error ${e}
+                                                }
                                             }
                                         }
                                     }
@@ -70,11 +75,16 @@ pipeline {
                                             sh 'sleep $([ "jupyter-arm" == "${AGENT}" ] && echo 30 || echo 10) && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
                                             sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
                                         } catch (e) {
+                                            CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
-                                                CONT = "false"
+                                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
+                                                    error ${e}
+                                                }
                                             } else {
-                                                error ${e}
-                                            }      
+                                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE'){
+                                                    error ${e}
+                                                }
+                                            }
                                         }
                                     }
                                 }
