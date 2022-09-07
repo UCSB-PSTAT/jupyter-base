@@ -26,6 +26,9 @@ pipeline {
                         agent {
                             label "${AGENT}"
                         }
+                        environment {
+                         CONT "true"
+                        }
                         stages{
                             stage('Build') {
                                 environment {
@@ -43,16 +46,37 @@ pipeline {
                                     ).trim()}""" 
                                 }
                                 steps {
-                                    scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
-                                    sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
+                                    script{
+                                        try {
+                                            scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+                                            sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
+                                        } catch (e) {
+                                            if ( "jupyter-arm" == env.AGENT ) {
+                                                CONT = "false"
+                                            } else {
+                                                error ${e}
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             stage('Test') {
+                                when { environment name: 'CONT', value: 'true'}
                                 steps {
-                                    sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
-                                    sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
-                                    sh 'sleep $([ "jupyter-arm" == "${AGENT}" ] && echo 30 || echo 10) && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
-                                    sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                                    script {
+                                        try {
+                                            sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
+                                            sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
+                                            sh 'sleep $([ "jupyter-arm" == "${AGENT}" ] && echo 30 || echo 10) && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                                            sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
+                                        } catch (e) {
+                                            if ( "jupyter-arm" == env.AGENT ) {
+                                                CONT = "false"
+                                            } else {
+                                                error ${e}
+                                            }      
+                                        }
+                                    }
                                 }
                                 post {
                                     always {
@@ -61,7 +85,12 @@ pipeline {
                                 }
                             }
                             stage('Deploy') {
-                                when { branch 'main' }
+                                when { 
+                                    allOf {
+                                        branch 'main'
+                                        environment name: 'CONT', value: 'true'
+                                    }
+                                }
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('DockerHubToken')
                                     IMG_SUFFIX = """${sh(
