@@ -57,9 +57,7 @@ pipeline {
                                                     error ${e}
                                                 }
                                             } else {
-                                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE'){
-                                                    error ${e}
-                                                }
+                                                throw ${e}
                                             }
                                         }
                                     }
@@ -77,13 +75,11 @@ pipeline {
                                         } catch (e) {
                                             CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
-                                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
+                                                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: ${e}){
                                                     error ${e}
                                                 }
                                             } else {
-                                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE'){
-                                                    error ${e}
-                                                }
+                                                throw ${e}
                                             }
                                         }
                                     }
