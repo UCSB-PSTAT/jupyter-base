@@ -48,7 +48,9 @@ pipeline {
                                 steps {
                                     script{
                                         try {
-                                            scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+                                            if (currentBuild.getBuildCauses('com.cloudbees.jenkins.GitHubPushCause').size() || currentBuild.getBuildCauses('jenkins.branch.BranchIndexingCause').size()) {
+                                                scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
+                                            }
                                             sh 'podman build -t localhost/$IMAGE_NAME --pull --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
                                             CONT = "false"
