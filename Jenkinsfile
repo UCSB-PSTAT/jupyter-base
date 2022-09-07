@@ -27,7 +27,7 @@ pipeline {
                             label "${AGENT}"
                         }
                         environment {
-                         CONT "true"
+                            CONT = "true"
                         }
                         stages{
                             stage('Build') {
