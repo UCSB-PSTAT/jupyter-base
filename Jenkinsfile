@@ -108,7 +108,7 @@ pipeline {
                                 }
                                 stages{
                                     stage('Deploy latest/version tag') {
-                                        when { environment name: 'STREAM', value: 'current' }
+                                        when { environment name: 'STREAM', value: 'stable' }
                                         steps {
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
