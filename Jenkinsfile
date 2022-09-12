@@ -72,7 +72,7 @@ pipeline {
                                         try {
                                             sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
                                             if ( "scipy-base" == env.IMG_NAME ) {
-                                                sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import scipy";
+                                                sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import scipy"'
                                             }
                                             sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
                                             sh 'sleep $([ "jupyter-arm" == "${AGENT}" ] && echo 30 || echo 10) && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
