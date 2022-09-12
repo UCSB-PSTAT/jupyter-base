@@ -41,7 +41,7 @@ RUN apt update -qq && \
 RUN pip install nbgitpuller && \
     jupyter serverextension enable --py nbgitpuller --sys-prefix
 
-RUN mamba install -y -c conda-forge pandas numpy matplotlib 
+RUN mamba install -y -c conda-forge pandas numpy matplotlib scipy
 
 USER $NB_USER
 
