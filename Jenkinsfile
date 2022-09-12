@@ -38,7 +38,7 @@ pipeline {
                                     ).trim()}"""
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
-                                        script: '[ "scipy-base" == "$IMG_NAME" ] && echo "scipy" || echo "base"'
+                                        script: '[ "scipy-base" == "$IMAGE_NAME" ] && echo "scipy" || echo "base"'
                                     ).trim()}"""        
                                     IMG_VERSION = """${sh(
                                         returnStdout: true,
@@ -71,6 +71,9 @@ pipeline {
                                     script {
                                         try {
                                             sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "import numpy; import pandas; import matplotlib"'
+                                            if ( "scipy-base" == env.IMAGE_NAME ) {
+                                                sh 'podman run -it --rm localhost/$IMAGE_NAME python -c "from scipy import linalg, optimize"'
+                                            }
                                             sh 'podman run -d --name=$IMAGE_NAME --rm -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
                                             sh 'sleep $([ "jupyter-arm" == "${AGENT}" ] && echo 30 || echo 10) && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
                                             sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
