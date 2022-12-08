@@ -1,4 +1,4 @@
-FROM jupyter/base-notebook:notebook-6.4.12
+FROM jupyter/base-notebook:notebook-6.5.2
 
 USER root
 
