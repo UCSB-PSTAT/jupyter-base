@@ -1,4 +1,4 @@
-FROM jupyter/base-notebook:notebook-6.5.2
+FROM jupyter/base-notebook:notebook-6.5.3
 
 USER root
 
@@ -39,9 +39,9 @@ RUN apt update -qq && \
     apt-get clean
 
 RUN pip install nbgitpuller && \
-    jupyter serverextension enable --py nbgitpuller --sys-prefix
+    jupyter server extension enable --py nbgitpuller --sys-prefix
 
-RUN mamba install -y -c conda-forge pandas numpy matplotlib && \
+RUN mamba install -y -c conda-forge pandas numpy matplotlib jupyterthemes && \
     mamba clean --all
 
 USER $NB_USER
