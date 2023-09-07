@@ -1,5 +1,4 @@
-FROM jupyter/base-notebook:notebook-6.5.3
-
+FROM jupyter/base-notebook:notebook-7.0.2
 USER root
 
 RUN apt update -qq && \
