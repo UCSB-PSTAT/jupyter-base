@@ -1,3 +1,5 @@
+def CONT = "true"
+
 pipeline {
     agent none
     triggers { cron('H H(0-6) * * 1') }
@@ -25,9 +27,6 @@ pipeline {
                     stage('Build Test Deploy') {
                         agent {
                             label "${AGENT}"
-                        }
-                        environment {
-                            CONT = "true"
                         }
                         stages{
                             stage('Build') {
