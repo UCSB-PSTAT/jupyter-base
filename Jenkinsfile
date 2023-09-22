@@ -51,6 +51,7 @@ pipeline {
                                             if (currentBuild.getBuildCauses('com.cloudbees.jenkins.GitHubPushCause').size() || currentBuild.getBuildCauses('jenkins.branch.BranchIndexingCause').size()) {
                                                 scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
                                             }
+                                            echo "NODE_NAME = ${env.NODE_NAME}"
                                             sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
                                             CONT = "false"
