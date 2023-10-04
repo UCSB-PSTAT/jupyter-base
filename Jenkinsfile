@@ -1,6 +1,6 @@
 pipeline {
     agent none
-    triggers { cron('H H(0-6) * * 1') }
+    triggers { cron('H H(0-2) * * 1') }
     environment {
         JUPYTER_VERSION = '7.0.3'
     }
@@ -122,6 +122,11 @@ pipeline {
                                         when { environment name: 'STREAM', value: 'integration' }
                                         steps {
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:weekly${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                        }
+                                        post {
+                                            always {
+                                                sh 'podman rmi -i $IMAGE_NAME || true'
+                                            }
                                         }
                                     }
                                 }
