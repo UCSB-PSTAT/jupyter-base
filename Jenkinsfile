@@ -105,6 +105,7 @@ pipeline {
                                 }
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                                    HARBOR_CREDS = credentials('harbor-registry-token') 
                                     IMG_SUFFIX = """${sh(
                                         returnStdout: true,
                                         script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
@@ -116,12 +117,15 @@ pipeline {
                                         steps {
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://registry.lsit.ucsb.edu/jhub/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $HARBOR_CREDS_USR --dest-password $HARBOR_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://registry.lsit.ucsb.edu/jhub/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $HARBOR_CREDS_USR --dest-password $HARBOR_CREDS_PSW'
                                         }
                                     }
                                     stage('Deploy weekly tag') {
                                         when { environment name: 'STREAM', value: 'integration' }
                                         steps {
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:weekly${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://registry.lsit.ucsb.edu/jhub/${IMAGE_NAME}:weekly${IMG_SUFFIX} --dest-username $HARBOR_CREDS_USR --dest-password $HARBOR_CREDS_PSW'
                                         }
                                         post {
                                             always {
