@@ -2,7 +2,7 @@ def CONT = "true"
 
 pipeline {
     agent none
-    triggers { cron('H H(0-6) * * 1') }
+    triggers { cron('H H(0-2) * * 1') }
     environment {
         JUPYTER_VERSION = '7.0.3'
     }
@@ -50,6 +50,7 @@ pipeline {
                                             if (currentBuild.getBuildCauses('com.cloudbees.jenkins.GitHubPushCause').size() || currentBuild.getBuildCauses('jenkins.branch.BranchIndexingCause').size()) {
                                                 scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
                                             }
+                                            echo "NODE_NAME = ${env.NODE_NAME}"
                                             sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
                                             CONT = "false"
@@ -121,6 +122,11 @@ pipeline {
                                         steps {
                                             sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:weekly${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                                         }
+                                        post {
+                                            always {
+                                                sh 'podman rmi -i $IMAGE_NAME || true'
+                                            }
+                                        }
                                     }
                                 }
                             }                
@@ -132,10 +138,10 @@ pipeline {
     }
     post {
         success {
-            slackSend(channel: '#infrastructure-build', username: 'jenkins', message: "Build ${env.JOB_NAME} ${env.BUILD_NUMBER} just finished successfull! (<${env.BUILD_URL}|Details>)")
+            slackSend(channel: '#infrastructure-build', username: 'jenkins', color: 'good', message: "Build ${env.JOB_NAME} ${env.BUILD_NUMBER} just finished successfull! (<${env.BUILD_URL}|Details>)")
         }
         failure {
-            slackSend(channel: '#infrastructure-build', username: 'jenkins', message: "Uh Oh! Build ${env.JOB_NAME} ${env.BUILD_NUMBER} had a failure! (<${env.BUILD_URL}|Find out why>).")
+            slackSend(channel: '#infrastructure-build', username: 'jenkins', color: 'danger', message: "Uh Oh! Build ${env.JOB_NAME} ${env.BUILD_NUMBER} had a failure! (<${env.BUILD_URL}|Find out why>).")
         }
     }
 }
