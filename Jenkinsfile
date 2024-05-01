@@ -51,7 +51,7 @@ pipeline {
                                                 scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
                                             }
                                             echo "NODE_NAME = ${env.NODE_NAME}"
-                                            sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
+                                            sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=quay.io/jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
                                             CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
