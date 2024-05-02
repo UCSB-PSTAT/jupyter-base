@@ -4,7 +4,7 @@ pipeline {
     agent none
     triggers { cron('H H(0-2) * * 1') }
     environment {
-        JUPYTER_VERSION = '7.0.3'
+        JUPYTER_VERSION = '7.1.3'
     }
     stages {
         stage('Jupyter Images') {
@@ -51,7 +51,7 @@ pipeline {
                                                 scmSkip(deleteBuild: true, skipPattern:'.*\\[ci skip\\].*')
                                             }
                                             echo "NODE_NAME = ${env.NODE_NAME}"
-                                            sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
+                                            sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=quay.io/jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
                                             CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
