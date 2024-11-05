@@ -16,7 +16,7 @@ pipeline {
                     }
                     axis {
                         name 'AGENT'
-                        values 'jupyter', 'jupyter-arm'
+                        values 'jupyter-k8s-amd64', 'jupyter-arm'
                     }
                     axis {
                         name 'STREAM'
