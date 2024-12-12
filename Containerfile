@@ -1,4 +1,4 @@
-FROM quay.io/jupyter/base-notebook:notebook-7.2.2
+FROM quay.io/jupyter/base-notebook:notebook-7.3.1
 USER root
 
 RUN apt update -qq && \
@@ -40,8 +40,8 @@ RUN apt update -qq && \
 RUN pip install nbgitpuller && \
     jupyter server extension enable --py nbgitpuller --sys-prefix
 
-RUN conda install -y -c conda-forge pandas numpy matplotlib jupyterthemes && \
-    conda clean --all
+RUN mamba install -y -c conda-forge pandas numpy matplotlib jupyterthemes && \
+    mamba clean --all
 
 USER $NB_USER
 
