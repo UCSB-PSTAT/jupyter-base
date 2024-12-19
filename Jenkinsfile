@@ -70,7 +70,7 @@ pipeline {
                                             if ( "scipy-base" == env.IMAGE_NAME ) {
                                                 sh 'podman run -it --rm --pull=never localhost/$IMAGE_NAME python -c "from scipy import linalg, optimize"'
                                             }
-                                            sh 'podman run -d --name=$IMAGE_NAME --rm --pull=never -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
+                                            sh 'podman run -d --name=$IMAGE_NAME --network=slirp4netns --rm --pull=never -p 8888:8888 localhost/$IMAGE_NAME start-notebook.sh --NotebookApp.token="jenkinstest"'
                                             sh 'sleep 10 && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$" || ( sleep 30 && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$" )'
                                             sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
                                         } catch (e) {
