@@ -1,5 +1,3 @@
-def CONT = "true"
-
 pipeline {
     agent none
     triggers { cron('H H(0-2) * * 1') }
@@ -53,7 +51,6 @@ pipeline {
                                             echo "NODE_NAME = ${env.NODE_NAME}"
                                             sh 'podman build -t localhost/$IMAGE_NAME --pull --force-rm --no-cache --from=quay.io/jupyter/${IMG_BASE}-notebook:${IMG_PREFIX}$([ "stable" == "${STREAM}" ] && echo "notebook-")${IMG_VERSION} .'
                                         } catch (e) {
-                                            CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
                                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
                                                     error ${e}
@@ -66,7 +63,6 @@ pipeline {
                                 }
                             }
                             stage('Test') {
-                                when { environment name: 'CONT', value: 'true'}
                                 steps {
                                     script {
                                         try {
@@ -78,7 +74,6 @@ pipeline {
                                             sh 'sleep $([ "jupyter-arm" == "${AGENT}" ] && echo 30 || echo 10) && curl -v http://localhost:8888/lab?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
                                             sh 'curl -v http://localhost:8888/tree?token=jenkinstest 2>&1 | grep -P "HTTP\\S+\\s200\\s+[\\w\\s]+\\s*$"'
                                         } catch (e) {
-                                            CONT = "false"
                                             if ( "jupyter-arm" == env.AGENT ) {
                                                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE', message: ${e}){
                                                     error ${e}
@@ -99,7 +94,6 @@ pipeline {
                                 when { 
                                     allOf {
                                         branch 'main'
-                                        environment name: 'CONT', value: 'true'
                                     }
                                 }
                                 environment {
