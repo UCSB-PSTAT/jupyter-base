@@ -43,6 +43,8 @@ RUN pip install nbgitpuller && \
 RUN mamba install -y -c conda-forge pandas numpy matplotlib jupyterthemes && \
     mamba clean --all
 
+RUN chown -R jovyan:users /home/jovyan
+
 USER $NB_USER
 
 RUN git lfs install
