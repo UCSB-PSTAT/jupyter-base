@@ -10,7 +10,7 @@ pipeline {
                 axes {
                     axis {
                         name 'IMAGE_NAME'
-                        values 'jupyter-base', 'scipy-base'
+                        values 'jupyter-base', 'scipy-base', 'pytorch-base'
                     }
                     axis {
                         name 'AGENT'
@@ -31,11 +31,11 @@ pipeline {
                                 environment {
                                     IMG_PREFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || echo ""'
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMG_NAME" ] && echo "cuda12-" ||  echo "" )'
                                     ).trim()}"""
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
-                                        script: '[ "scipy-base" == "$IMAGE_NAME" ] && echo "scipy" || echo "base"'
+                                        script: '[ "scipy-base" == "$IMAGE_NAME" ] && echo "scipy" || ( [ "pytorch-base" == "$IMAGE_NAME" ] && echo "pytorch" || echo "base" )'
                                     ).trim()}"""        
                                     IMG_VERSION = """${sh(
                                         returnStdout: true,
