@@ -20,6 +20,32 @@ pipeline {
                         name 'STREAM'
                         values 'stable', 'integration'
                     }
+                    axis {
+                        name 'CUDA_VER'
+                        values 'none', 'cuda11', 'cuda12'
+                    }
+                }
+                excludes {
+                    exclude {
+                        axis {
+                            name 'IMAGE_NAME'
+                            notvalues 'pytorch-base'
+                        }
+                        axis {
+                            name 'CUDA_VER'
+                            notvalues 'none'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'AGENT'
+                            values 'jupyter-arm'
+                        }
+                        axis {
+                            name 'CUDA_VER'
+                            notvalues 'none'
+                        }
+                    }
                 }
                 stages {
                     stage('Build Test Deploy') {
@@ -31,7 +57,7 @@ pipeline {
                                 environment {
                                     IMG_PREFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMG_NAME" ] && echo "cuda12-" ||  echo "" )'
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMG_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" )'
                                     ).trim()}"""
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
@@ -39,7 +65,7 @@ pipeline {
                                     ).trim()}"""        
                                     IMG_VERSION = """${sh(
                                         returnStdout: true,
-                                        script: '[ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
+                                        script: '[ "$CUDA_VER" != "none" ] && echo -n "${CUDA_VER}-" ; [ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
                                     ).trim()}""" 
                                 }
                                 steps {
@@ -98,6 +124,10 @@ pipeline {
                                 }
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                                    IMG_PREFIX = """${sh(
+                                        returnStdout: true,
+                                        script: '[ "none" != "$CUDA_VER" ] && echo "${CUDA_VER}-" || echo ""'
+                                    ).trim()}"""     
                                     IMG_SUFFIX = """${sh(
                                         returnStdout: true,
                                         script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
@@ -107,14 +137,14 @@ pipeline {
                                     stage('Deploy latest/version tag') {
                                         when { environment name: 'STREAM', value: 'stable' }
                                         steps {
-                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
-                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:${IMG_PREFIX}latest${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:${IMG_PREFIX}v$(date "+%Y%m%d")${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                                         }
                                     }
                                     stage('Deploy weekly tag') {
                                         when { environment name: 'STREAM', value: 'integration' }
                                         steps {
-                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:weekly${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
+                                            sh 'skopeo copy containers-storage:localhost/$IMAGE_NAME docker://docker.io/ucsb/${IMAGE_NAME}:${IMG_PREFIX}weekly${IMG_SUFFIX} --dest-username $DOCKER_HUB_CREDS_USR --dest-password $DOCKER_HUB_CREDS_PSW'
                                         }
                                         post {
                                             always {
