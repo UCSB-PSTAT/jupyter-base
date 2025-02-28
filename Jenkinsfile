@@ -57,7 +57,7 @@ pipeline {
                                 environment {
                                     IMG_PREFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMG_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" )'
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMAGE_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" )'
                                     ).trim()}"""
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
@@ -65,7 +65,7 @@ pipeline {
                                     ).trim()}"""        
                                     IMG_VERSION = """${sh(
                                         returnStdout: true,
-                                        script: '[ "$CUDA_VER" != "none" ] && echo -n "${CUDA_VER}-" ; [ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
+                                        script: [ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
                                     ).trim()}""" 
                                 }
                                 steps {
