@@ -29,11 +29,11 @@ pipeline {
                     exclude {
                         axis {
                             name 'IMAGE_NAME'
-                            notvalues 'pytorch-base'
+                            notValues 'pytorch-base'
                         }
                         axis {
                             name 'CUDA_VER'
-                            notvalues 'none'
+                            notValues 'none'
                         }
                     }
                     exclude {
@@ -43,7 +43,7 @@ pipeline {
                         }
                         axis {
                             name 'CUDA_VER'
-                            notvalues 'none'
+                            notValues 'none'
                         }
                     }
                 }
