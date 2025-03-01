@@ -6,6 +6,7 @@ Base image for launching Jupyter notebooks via JupyterHub.  This is based on the
 This repo produces the following images on Docker Hub:
 * [ucsb/jupyter-base](https://hub.docker.com/r/ucsb/jupyter-base)
 * [ucsb/scipy-base](https://hub.docker.com/r/ucsb/scipy-base)
+* [ucsb/pytorch-base](https://hub.docker.com/r/ucsb/pytorch-base)
 
 Looking for RStudio support?  Check out our [RStudio base image](https://hub.docker.com/u/ucsb/rstudio-base).
 
