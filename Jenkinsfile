@@ -65,7 +65,7 @@ pipeline {
                                     ).trim()}"""        
                                     IMG_VERSION = """${sh(
                                         returnStdout: true,
-                                        script: [ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
+                                        script: '[ "integration" == "$STREAM" ] && echo "latest" || echo "${JUPYTER_VERSION}"'
                                     ).trim()}""" 
                                 }
                                 steps {
