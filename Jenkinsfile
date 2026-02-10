@@ -163,6 +163,26 @@ pipeline {
                 }
             }
         }
+        stage('Latest and Datecode Manifests') {
+            when { branch 'main' }
+            agent { label 'podman' }
+            environment {
+                DOCKER_HUB_CREDS = credentials('DockerHubToken')
+            }
+            steps {
+                //FIXME This is copied from a single user image, but we need to replace the IMAGE_NAME var here because this build does multiple image names because of the Matrix, which this is outside of.
+                sh 'podman manifest create $IMAGE_NAME:latest'
+                sh 'podman manifest add $IMAGE_NAME:latest docker://docker.io/ucsb/$IMAGE_NAME:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add $IMAGE_NAME:latest docker://docker.io/ucsb/$IMAGE_NAME:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push $IMAGE_NAME:latest docker://docker.io/ucsb/$IMAGE_NAME:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push $IMAGE_NAME:latest docker://docker.io/ucsb/$IMAGE_NAME:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+            }
+            post {
+                always {
+                    sh 'podman manifest rm $IMAGE_NAME:latest || true'
+                }
+            }
+        }
     }
     post {
         success {
