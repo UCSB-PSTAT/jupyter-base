@@ -22,7 +22,7 @@ pipeline {
                     }
                     axis {
                         name 'CUDA_VER'
-                        values 'none', 'cuda11', 'cuda12'
+                        values 'none', 'cuda12', 'cuda13'
                     }
                 }
                 excludes {
