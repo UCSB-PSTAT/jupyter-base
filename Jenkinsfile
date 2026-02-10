@@ -5,7 +5,7 @@ pipeline {
         JUPYTER_VERSION = '7.4.5'
     }
     stages {
-        stage('Jupyter Images') {
+        stage('Jupyter Image Builds') {
             matrix {
                 axes {
                     axis {
@@ -130,7 +130,7 @@ pipeline {
                                     ).trim()}"""     
                                     IMG_SUFFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo "-arm64"'
                                     ).trim()}"""                                    
                                 }
                                 stages{
