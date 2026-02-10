@@ -57,7 +57,7 @@ pipeline {
                                 environment {
                                     IMG_PREFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMAGE_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" )'
+                                        script: '[ "pytorch-base" == "$IMAGE_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" '
                                     ).trim()}"""
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
