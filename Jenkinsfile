@@ -184,7 +184,7 @@ pipeline {
                 sh 'podman manifest push ucsb/scipy-base:latest docker://docker.io/ucsb/scipy-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 sh 'podman manifest push ucsb/scipy-base:latest docker://docker.io/ucsb/scipy-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 //Create manifest for cuda12-pytorch-base from existing tags. 
-                sh 'podman manifest ucsb/create cuda12-pytorch-base:latest'
+                sh 'podman manifest create ucsb/cuda12-pytorch-base:latest'
                 sh 'podman manifest add ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 sh 'podman manifest add ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 sh 'podman manifest push ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
