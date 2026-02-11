@@ -130,7 +130,7 @@ pipeline {
                                     ).trim()}"""     
                                     IMG_SUFFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo "-arm64"'
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo "-amd64"'
                                     ).trim()}"""                                    
                                 }
                                 stages{
