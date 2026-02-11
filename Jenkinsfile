@@ -2,10 +2,10 @@ pipeline {
     agent none
     triggers { cron('H H(0-2) * * 1') }
     environment {
-        JUPYTER_VERSION = '7.4.5'
+        JUPYTER_VERSION = '7.5.3'
     }
     stages {
-        stage('Jupyter Images') {
+        stage('Jupyter Image Builds') {
             matrix {
                 axes {
                     axis {
@@ -22,7 +22,7 @@ pipeline {
                     }
                     axis {
                         name 'CUDA_VER'
-                        values 'none', 'cuda11', 'cuda12'
+                        values 'none', 'cuda12', 'cuda13'
                     }
                 }
                 excludes {
@@ -57,7 +57,7 @@ pipeline {
                                 environment {
                                     IMG_PREFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "aarch64-" || ( [ "pytorch-base" == "$IMAGE_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" )'
+                                        script: '[ "pytorch-base" == "$IMAGE_NAME" -a "$CUDA_VER" != "none" ] && echo "${CUDA_VER}-" ||  echo "" '
                                     ).trim()}"""
                                     IMG_BASE = """${sh(
                                         returnStdout: true,
@@ -130,7 +130,7 @@ pipeline {
                                     ).trim()}"""     
                                     IMG_SUFFIX = """${sh(
                                         returnStdout: true,
-                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo ""'
+                                        script: '[ "jupyter-arm" == "$AGENT" ] && echo "-aarch64" || echo "-arm64"'
                                     ).trim()}"""                                    
                                 }
                                 stages{
@@ -160,6 +160,50 @@ pipeline {
                             }                
                         }
                     }
+                }
+            }
+        }
+        stage('Latest and Datecode Manifests') {
+            when { branch 'main' }
+            agent { label 'podman' }
+            environment {
+                DOCKER_HUB_CREDS = credentials('DockerHubToken')
+            }
+            steps {
+                //In Theory this only happens when all of the other stages have already deployed. There should be jupyter-base, scipy-base and pytorch-base images with date codes that match latest at this point, and weekly tags for all of those as well. Pytorch has a cuda prefix as well, but we should probably make a simple latest tag that uses the most recent cuda version. 
+                //Create manifest for jupyter-base from existing tags and push to latest and datecode tags. 
+                sh 'podman manifest create jupyter-base:latest'
+                sh 'podman manifest add jupyter-base:latest docker://docker.io/ucsb/jupyter-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add jupyter-base:latest docker://docker.io/ucsb/jupyter-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push jupyter-base:latest docker://docker.io/ucsb/jupyter-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push jupyter-base:latest docker://docker.io/ucsb/jupyter-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                //Create manifest for scipy-base from existing tags. 
+                sh 'podman manifest create scipy-base:latest'
+                sh 'podman manifest add scipy-base:latest docker://docker.io/ucsb/scipy-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add scipy-base:latest docker://docker.io/ucsb/scipy-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push scipy-base:latest docker://docker.io/ucsb/scipy-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push scipy-base:latest docker://docker.io/ucsb/scipy-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                //Create manifest for cuda12-pytorch-base from existing tags. 
+                sh 'podman manifest create cuda12-pytorch-base:latest'
+                sh 'podman manifest add cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                //Create manifest for cuda13-pytorch-base and pytorch-base (since Cuda13 is latest) from existing tags. 
+                sh 'podman manifest create cuda13-pytorch-base:latest'
+                sh 'podman manifest add cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push cuda13-pytorch-base:latest docker://docker.io/ucsb/pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push cuda13-pytorch-base:latest docker://docker.io/ucsb/pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+            }
+            post {
+                always {
+                    sh 'podman manifest rm jupyter-base:latest || true'
+                    sh 'podman manifest rm scipy-base:latest || true'
+                    sh 'podman manifest rm pytorch-base:cuda12-latest || true'
+                    sh 'podman manifest rm pytorch-base:cuda13-latest || true'
                 }
             }
         }
