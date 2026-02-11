@@ -173,20 +173,20 @@ pipeline {
                 sh 'podman manifest add ucsb/scipy-base:latest docker://docker.io/ucsb/scipy-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 sh 'podman manifest push ucsb/scipy-base:latest docker://docker.io/ucsb/scipy-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 sh 'podman manifest push ucsb/scipy-base:latest docker://docker.io/ucsb/scipy-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                //Create manifest for cuda12-pytorch-base from existing tags. 
-                sh 'podman manifest create ucsb/cuda12-pytorch-base:latest'
-                sh 'podman manifest add ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest add ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest push ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest push ucsb/cuda12-pytorch-base:latest docker://docker.io/ucsb/cuda12-pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                //Create manifest for cuda13-pytorch-base and pytorch-base (since Cuda13 is latest) from existing tags. 
-                sh 'podman manifest create ucsb/cuda13-pytorch-base:latest'
-                sh 'podman manifest add ucsb/cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest add ucsb/cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest push ucsb/cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest push ucsb/cuda13-pytorch-base:latest docker://docker.io/ucsb/cuda13-pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest push ucsb/cuda13-pytorch-base:latest docker://docker.io/ucsb/pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
-                sh 'podman manifest push ucsb/cuda13-pytorch-base:latest docker://docker.io/ucsb/pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                //Create manifest for pytorch-base:cuda12-*  from existing tags. 
+                sh 'podman manifest create ucsb/pytorch-base:cuda12-latest'
+                sh 'podman manifest add ucsb/pytorch-base:cuda12-latest docker://docker.io/ucsb/pytorch-base:cuda12-latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add ucsb/pytorch-base:cuda12-latest docker://docker.io/ucsb/pytorch-base:cuda12-latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push ucsb/pytorch-base:cuda12-latest docker://docker.io/ucsb/pytorch-base:cuda12-latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push ucsb/pytorch-base:cuda12-latest docker://docker.io/ucsb/pytorch-base:cuda12-v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                //Create manifest for pytorch-base:cuda13-* and pytorch-base (since Cuda13 is latest) from existing tags. 
+                sh 'podman manifest create ucsb/pytorch-base:cuda13-latest'
+                sh 'podman manifest add ucsb/pytorch-base:cuda13-latest docker://docker.io/ucsb/pytorch-base:cuda13-latest-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add ucsb/pytorch-base:cuda13-latest docker://docker.io/ucsb/pytorch-base:cuda13-latest-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push ucsb/pytorch-base:cuda13-latest docker://docker.io/ucsb/pytorch-base:cuda13-latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push ucsb/pytorch-base:cuda13-latest docker://docker.io/ucsb/pytorch-base:cuda13-v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push ucsb/pytorch-base:cuda13-latest docker://docker.io/ucsb/pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest push ucsb/pytorch-base:cuda13-latest docker://docker.io/ucsb/pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
             }
             post {
                 always {
