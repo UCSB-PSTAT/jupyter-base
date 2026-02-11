@@ -36,16 +36,6 @@ pipeline {
                             notValues 'none'
                         }
                     }
-                    exclude {
-                        axis {
-                            name 'AGENT'
-                            values 'jupyter-arm'
-                        }
-                        axis {
-                            name 'CUDA_VER'
-                            notValues 'none'
-                        }
-                    }
                 }
                 stages {
                     stage('Build Test Deploy') {
