@@ -1,4 +1,4 @@
-FROM quay.io/jupyter/base-notebook:notebook-7.4.5
+FROM quay.io/jupyter/base-notebook:notebook-7.5.5
 USER root
 
 RUN apt update -qq && \
