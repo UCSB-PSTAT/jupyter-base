@@ -37,7 +37,7 @@ RUN apt update -qq && \
         wget && \
     apt-get clean
 
-RUN pip install nbgitpuller && \
+RUN pip install nbgitpuller openai "jupyter-ai[all]<3.0.0" && \
     jupyter server extension enable --py nbgitpuller --sys-prefix
 
 RUN mamba install -y -c conda-forge pandas numpy matplotlib jupyterthemes && \
