@@ -109,11 +109,11 @@ pipeline {
                                 }
                             }
                             stage('Deploy') {
-                                //when { 
-                                    //allOf {
-                                        //branch 'main'
-                                    //}
-                                //}
+                                when { 
+                                    allOf {
+                                        branch 'main'
+                                    }
+                                }
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('harbor-registry-token')
                                     IMG_PREFIX = """${sh(
@@ -156,7 +156,7 @@ pipeline {
             }
         }
         stage('Latest and Datecode Manifests') {
-            //when { branch 'main' }
+            when { branch 'main' }
             agent { label 'podman' }
             environment {
                 DOCKER_HUB_CREDS = credentials('harbor-registry-token')
