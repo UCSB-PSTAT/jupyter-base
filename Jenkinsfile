@@ -109,11 +109,11 @@ pipeline {
                                 }
                             }
                             stage('Deploy') {
-                                when { 
-                                    allOf {
+                                //when { 
+                                    //allOf {
                                         //branch 'main'
-                                    }
-                                }
+                                    //}
+                                //}
                                 environment {
                                     DOCKER_HUB_CREDS = credentials('harbor-registry-token')
                                     IMG_PREFIX = """${sh(
