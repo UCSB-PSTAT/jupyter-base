@@ -115,7 +115,7 @@ pipeline {
                                     }
                                 }
                                 environment {
-                                    DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                                    DOCKER_HUB_CREDS = credentials('harbor-registry-token')
                                     IMG_PREFIX = """${sh(
                                         returnStdout: true,
                                         script: '[ "none" != "$CUDA_VER" ] && echo "${CUDA_VER}-" || echo ""'
@@ -159,7 +159,7 @@ pipeline {
             //when { branch 'main' }
             agent { label 'podman' }
             environment {
-                DOCKER_HUB_CREDS = credentials('DockerHubToken')
+                DOCKER_HUB_CREDS = credentials('harbor-registry-token')
             }
             steps {
                 //In Theory this only happens when all of the other stages have already deployed. There should be jupyter-base, scipy-base and pytorch-base images with date codes that match latest at this point, and weekly tags for all of those as well. Pytorch has a cuda prefix as well, but we should probably make a simple latest tag that uses the most recent cuda version. 
