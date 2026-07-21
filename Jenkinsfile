@@ -197,6 +197,12 @@ pipeline {
                     sh 'podman manifest push ucsb/pytorch-base:cuda13-latest docker://$CONTAINER_REGISTRY/ucsb/pytorch-base:latest --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                     sh 'podman manifest push ucsb/pytorch-base:cuda13-latest docker://$CONTAINER_REGISTRY/ucsb/pytorch-base:v$(date "+%Y%m%d") --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
                 }
+                sh 'podman manifest create ucsb/jupyter-base:weekly'
+                sh 'podman manifest add ucsb/jupyter-base:weekly docker://$CONTAINER_REGISTRY/ucsb/jupyter-base:weekly-aarch64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                sh 'podman manifest add ucsb/jupyter-base:weekly docker://$CONTAINER_REGISTRY/ucsb/jupyter-base:weekly-amd64 --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                retry(6){
+                    sh 'podman manifest push ucsb/jupyter-base:weekly docker://$CONTAINER_REGISTRY/ucsb/jupyter-base:weekly --creds $DOCKER_HUB_CREDS_USR:$DOCKER_HUB_CREDS_PSW'
+                }
             }
             post {
                 always {
