@@ -1,6 +1,8 @@
 FROM quay.io/jupyter/base-notebook:notebook-7.5.5
 USER root
 
+RUN sed -i 's,URIs: http://archive.ubuntu.com/ubuntu/,URIs: https://ftp.ucsb.edu/ubuntu,g;s,Suites: noble noble-updates noble-backports,Suites: noble noble-updates noble-backports noble-security,g' /etc/apt/sources.list.d/ubuntu.sources
+
 RUN apt update -qq && \
     apt upgrade -y && \
     apt install -y \
