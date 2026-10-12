@@ -37,13 +37,22 @@ RUN apt update -qq && \
         libnlopt-dev \
         libboost-all-dev \
         wget && \
-    apt-get clean
+    apt-get clean &&\
+    ## Configure git lfs and R for all system users
+    git config --system filter.lfs.clean "git-lfs clean -- %filter-replica" && \
+    git config --system filter.lfs.smudge "git-lfs smudge -- %filter-replica" && \
+    git config --system filter.lfs.process "git-lfs filter-process"
 
 RUN pip install nbgitpuller openai "jupyter-ai[all]<3.0.0" && \
     jupyter server extension enable --py nbgitpuller --sys-prefix
 
-RUN mamba install -y -c conda-forge pandas numpy matplotlib jupyterthemes && \
+RUN mamba install -y -c conda-forge\ 
+    pandas\
+    numpy\
+    matplotlib\
+    jupyterthemes && \
     mamba clean --all
+    /usr/local/bin/fix-permissions "${CONDA_DIR}" || true
 
 RUN chown -R jovyan:users /home/jovyan
 
