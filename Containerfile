@@ -46,12 +46,17 @@ RUN apt update -qq && \
 RUN pip install nbgitpuller openai "jupyter-ai[all]<3.0.0" && \
     jupyter server extension enable --py nbgitpuller --sys-prefix
 
-RUN mamba install -y -c conda-forge\ 
-    pandas\
-    numpy\
+RUN mamba install -y -c conda-forge --freeze-installed\
+    "jupyter-ai=2.*"\
+    jupyterlab-git\
+    jupyterthemes\
+    langchain-openai\
     matplotlib\
-    jupyterthemes && \
-    mamba clean --all
+    nbgitpuller\
+    numpy\
+    openai\
+    pandas\
+    mamba clean -afy &&\
     /usr/local/bin/fix-permissions "${CONDA_DIR}" || true
 
 RUN chown -R jovyan:users /home/jovyan
