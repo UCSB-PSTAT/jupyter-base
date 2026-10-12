@@ -55,8 +55,10 @@ RUN mamba install -y -c conda-forge --freeze-installed\
     nbgitpuller\
     numpy\
     openai\
-    pandas\
-    mamba clean -afy &&\
+    pandas &&\
+    conda clean -afy &&\
+    jupyter server extension enable --py nbgitpuller --sys-prefix &&\
+    chown -R $NB_USER:$NB_GID /home/jovyan &&\
     /usr/local/bin/fix-permissions "${CONDA_DIR}" || true
 
 RUN chown -R jovyan:users /home/jovyan
