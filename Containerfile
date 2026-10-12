@@ -1,6 +1,8 @@
 FROM quay.io/jupyter/base-notebook:notebook-7.5.5
 USER root
 
+ENV PIP_NO_CACHE_DIR=1
+
 RUN sed -i 's,URIs: http://archive.ubuntu.com/ubuntu/,URIs: https://ftp.ucsb.edu/ubuntu,g;s,Suites: noble noble-updates noble-backports,Suites: noble noble-updates noble-backports noble-security,g' /etc/apt/sources.list.d/ubuntu.sources
 
 RUN apt update -qq && \
@@ -43,9 +45,6 @@ RUN apt update -qq && \
     git config --system filter.lfs.smudge "git-lfs smudge -- %filter-replica" && \
     git config --system filter.lfs.process "git-lfs filter-process"
 
-RUN pip install nbgitpuller openai "jupyter-ai[all]<3.0.0" && \
-    jupyter server extension enable --py nbgitpuller --sys-prefix
-
 RUN mamba install -y -c conda-forge --freeze-installed\
     "jupyter-ai=2.*"\
     jupyterlab-git\
@@ -61,8 +60,4 @@ RUN mamba install -y -c conda-forge --freeze-installed\
     chown -R $NB_USER:$NB_GID /home/jovyan &&\
     /usr/local/bin/fix-permissions "${CONDA_DIR}" || true
 
-RUN chown -R jovyan:users /home/jovyan
-
 USER $NB_USER
-
-RUN git lfs install
